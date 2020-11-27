@@ -1,54 +1,72 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Hamnen
 {
     class Program
     {
-        static Boat[] Port = new Boat[25];
+        static Dictionary<int, List<Boat>> Port = new Dictionary<int, List<Boat>>();
+
         static int rejectedCount = 0;
         static int day = 0;
         static void Main(string[] args)
         {
+            //set id for spots
+            for (int i = 0; i < 25; i++)
+            {
+                Port.Add(i, new List<Boat>());
+            }
+
+
             while (true)
             {
                 AdvanceDay();
                 DepartBoats();
                 AddRandomBoats();
-                Console.Clear();
                 PrintPort();
-                Console.ReadKey();
             }
         }
 
         static void AdvanceDay(int days = 1)
         {
             day++;
-            for (int i = 0; i < Port.Length;)
+            for (int i = 0; i < Port.Count; )
             {
-                Boat spot = Port[i];
-                if (spot != null)
+                var spot = Port[i];
+                foreach (var boat in spot)
                 {
-                    spot.AdvanceDay(days);
-                    i += spot.Size;
+                    boat.AdvanceDay(days);
                 }
+                if (spot.Count != 0)
+                    i += spot[0].Size;
                 else
-                {
                     i++;
-                }
             }
         }
 
         static void DepartBoats()
         {
-            for (int i = 0; i < Port.Length; i++)
+            for (int i = 0; i < Port.Count; i++)
             {
-                if (Port[i]?.DaysUntilDeparture == 0)
+                if (Port[i].Count == 1 && Port[i].Exists(c => c.DaysUntilDeparture == 0))
                 {
-                    int n = Port[i].Size;
-                    for (int j = 0; j < n; j++)
+                    Port[i].RemoveAt(0);
+                }
+                else if (Port[i].Count == 2)
+                {
+                    //Todo
+
+                    if (Port[i][0].DaysUntilDeparture == 0)
                     {
-                        Port[i + j] = null;
+                        Port[i].RemoveAt(0);
+                        if (Port[i][0].DaysUntilDeparture == 0)
+                            Port[i].RemoveAt(0);
                     }
+                    else if (Port[i][1].DaysUntilDeparture == 0)
+                    {
+                        Port[i].RemoveAt(1);
+                    }
+
                 }
             }
         }
@@ -63,7 +81,7 @@ namespace Hamnen
                 {
                     for (int j = 0; j < boat.Size; j++)
                     {
-                        Port[spot + j] = boat;
+                        Port[spot + j].Add(boat);
                     }
                 }
                 else
@@ -75,37 +93,52 @@ namespace Hamnen
 
         static void PrintPort()
         {
+            Console.Clear();
             Console.WriteLine($"Day: {day}");
             Console.WriteLine($"Rejected: {rejectedCount}");
-            for (int i = 0; i < Port.Length;)
+            for (int i = 0; i < Port.Count;)
             {
-                if (Port[i] == null)
+                string s;
+                if (Port[i].Count == 0)
                 {
-                    Console.WriteLine(String.Format("{0, -10}", i) + "Tom plats");
+                    Console.WriteLine(String.Format("{0, -10}", i + 1) + "Tom plats");
                     i++;
                 }
-                else
+                else if (Port[i].Count == 1 && Port[i][0].Size == 1)
                 {
-                    Boat boat = Port[i];
-                    string s;
-                    if (boat is MotorBoat)
-                    {
-                        s = String.Format("{0, -10}", i);
-                    }
-                    else
-                    {
-                        s = String.Format("{0, -10}", $"{i}-{i + boat.Size - 1}");
-                    }
+                    var boat = Port[i][0];
+                    s = String.Format("{0, -10}", i + 1);
+
                     s += boat.ToString();
                     Console.WriteLine(s);
                     i += boat.Size;
                 }
+                else if (Port[i].Count == 1 && Port[i][0].Size > 1)
+                {
+                    var boat = Port[i][0];
+                    s = String.Format("{0, -10}", $"{i + 1}-{i + 1 + boat.Size - 1}");
+
+                    s += boat.ToString();
+                    Console.WriteLine(s);
+                    i += boat.Size;
+                }
+                else if (Port[i].Count == 2)
+                {
+                    foreach (var boat in Port[i])
+                    {
+                        s = String.Format("{0, -10}", i + 1);
+                        s += boat.ToString();
+                        Console.WriteLine(s);
+                    }
+                    i += 1;
+                }
             }
+            Console.ReadKey();
         }
 
         static Boat GetRandomBoat()
         {
-            int n = new Random().Next(3);
+            int n = new Random().Next(4);
             switch (n)
             {
                 case 0:
@@ -114,6 +147,8 @@ namespace Hamnen
                     return new SailBoat();
                 case 2:
                     return new CargoShip();
+                case 3:
+                    return new RowingBoat();
                 default:
                     break;
             }
@@ -122,23 +157,29 @@ namespace Hamnen
 
         static int GetAvailableSpot(Boat boat)
         {
-            for (int i = 0; i < Port.Length; i++)
+            for (int i = 0; i < Port.Count; i++)
             {
-                if (Port[i] == null)
+                if (boat.IdNr.StartsWith("R-") && Port[i].Count == 1 && Port[i].Exists(c => c.IdNr.StartsWith("R-")))
+                {
+                    int spot = i;
+                    return spot;
+                    //there is room for rowingboat!
+                }
+                else if (Port[i].Count == 0)
                 {
                     bool spotAvailable = true;
                     int l = i + boat.Size;
                     int spot = i;
                     for (int j = i; j < l; j++)
                     {
-                        if (j >= Port.Length)
+                        if (j >= Port.Count)
                         {
                             return -1;
                         }
                         if (spotAvailable)
                         {
                             i = j;
-                            spotAvailable = Port[j] == null;
+                            spotAvailable = Port[j].Count == 0;
                         }
                         else
                         {
@@ -155,4 +196,7 @@ namespace Hamnen
             return -1;
         }
     }
+
+
+
 }

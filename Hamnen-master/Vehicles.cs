@@ -74,4 +74,24 @@ namespace Hamnen
             return String.Format("{0, -15}", "Lastfartyg") + String.Format("{0, -10}", this.IdNr) + this.DaysUntilDeparture;
         }
     }
+
+    public class RowingBoat : Boat
+    {
+        public int MaxPassengers { get; protected set; }
+        public RowingBoat()
+        {
+            char[] chars = "ABCDEFGHIJKLMNOPQRSTUVXYZ".ToCharArray();
+            Random rand = new Random();
+            Size = 1;
+            IdNr = $"R-{chars[rand.Next(chars.Length)]}{chars[rand.Next(chars.Length)]}{chars[rand.Next(chars.Length)]}";
+            Weight = rand.Next(100, 300);
+            MaxSpeed = rand.Next(0, 3);
+            DaysUntilDeparture = 1;
+            MaxPassengers = rand.Next(1, 6);
+        }
+        public override string ToString()
+        {
+            return String.Format("{0, -15}", "Roddbåt") + String.Format("{0, -10}", this.IdNr) + this.DaysUntilDeparture;
+        }
+    }
 }
