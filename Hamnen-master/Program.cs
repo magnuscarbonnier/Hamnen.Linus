@@ -20,6 +20,7 @@ namespace Hamnen
 
             while (true)
             {
+                
                 AdvanceDay();
                 DepartBoats();
                 AddRandomBoats();
@@ -37,8 +38,8 @@ namespace Hamnen
                 {
                     boat.AdvanceDay(days);
                 }
-                if (spot.Count != 0)
-                    i += spot[0].Size;
+                if (spot.Count != 0 && spot[0].Size>=0)
+                    i += (int)spot[0].Size;
                 else
                     i++;
             }
@@ -104,14 +105,14 @@ namespace Hamnen
                     Console.WriteLine(String.Format("{0, -10}", i + 1) + "Tom plats");
                     i++;
                 }
-                else if (Port[i].Count == 1 && Port[i][0].Size == 1)
+                else if (Port[i].Count == 1 && Port[i][0].Size <=1)
                 {
                     var boat = Port[i][0];
                     s = String.Format("{0, -10}", i + 1);
 
                     s += boat.ToString();
                     Console.WriteLine(s);
-                    i += boat.Size;
+                    i += 1;
                 }
                 else if (Port[i].Count == 1 && Port[i][0].Size > 1)
                 {
@@ -120,7 +121,7 @@ namespace Hamnen
 
                     s += boat.ToString();
                     Console.WriteLine(s);
-                    i += boat.Size;
+                    i += (int)boat.Size;
                 }
                 else if (Port[i].Count == 2)
                 {
@@ -130,7 +131,7 @@ namespace Hamnen
                         s += boat.ToString();
                         Console.WriteLine(s);
                     }
-                    i += 1;
+                    i++;
                 }
             }
             Console.ReadKey();
@@ -168,7 +169,11 @@ namespace Hamnen
                 else if (Port[i].Count == 0)
                 {
                     bool spotAvailable = true;
-                    int l = i + boat.Size;
+                    int l = i;
+                    if (boat.Size < 1)
+                        l=l+i;
+                    else
+                        l=l+ (int)boat.Size;
                     int spot = i;
                     for (int j = i; j < l; j++)
                     {

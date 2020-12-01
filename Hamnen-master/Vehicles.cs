@@ -4,7 +4,7 @@ namespace Hamnen
 {
     public abstract class Boat
     {
-        public int Size { get; protected set; }
+        public double Size { get; protected set; }
         public string IdNr { get; protected set; }
         public int Weight { get; protected set; }
         public int MaxSpeed { get; protected set; }
@@ -82,7 +82,7 @@ namespace Hamnen
         {
             char[] chars = "ABCDEFGHIJKLMNOPQRSTUVXYZ".ToCharArray();
             Random rand = new Random();
-            Size = 1;
+            Size = 0.5;
             IdNr = $"R-{chars[rand.Next(chars.Length)]}{chars[rand.Next(chars.Length)]}{chars[rand.Next(chars.Length)]}";
             Weight = rand.Next(100, 300);
             MaxSpeed = rand.Next(0, 3);
